@@ -5,23 +5,11 @@ import threading
 import time
 import queue
 
+from src.services.POST.postMessage import postMessage
+
 mqtt_message_queue = queue.Queue()
 last_message_time = time.time()
 
-def postMessage(contenido):
-    try:
-        conn = get_db_connection()
-        inst = '''
-                INSERT INTO mensajes (contenido)
-                VALUES (%(contenido)s);
-               '''
-        with conn.cursor() as cursor:
-            cursor.execute(inst, {'contenido': contenido})
-            conn.commit()
-            cursor.close()
-        print("Mensaje insertado en la base de datos.")
-    except Exception as e:
-        print("(SISTEMA)   Error al insertar el mensaje: " + str(e))
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
@@ -38,7 +26,7 @@ def connect_mqtt():
         last_message_time = time.time()
         print(f"Received `{message}` from `{msg.topic}` topic")
         # Aquí se inserta el mensaje en la base de datos
-        postMessage(message)  # Solo pasamos el contenido
+        postMessage(message)  
 
     client = mqtt_client.Client(client_id=client_id_mq, protocol=mqtt_client.MQTTv311, transport="tcp", callback_api_version=mqtt_client.CallbackAPIVersion.VERSION1)
     client.username_pw_set(username_mq, password_mq)
