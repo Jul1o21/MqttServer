@@ -1,6 +1,6 @@
 from paho.mqtt import client as mqtt_client
 from mqttconfig import client_id_mq, username_mq, password_mq, broker_mq, port_mq
-from src.database.db import connection
+from src.database.db import get_db_connection
 import threading
 import time
 import queue
@@ -10,7 +10,7 @@ last_message_time = time.time()
 
 def postMessage(contenido):
     try:
-        conn = connection()
+        conn = get_db_connection()
         inst = '''
                 INSERT INTO mensajes (contenido)
                 VALUES (%(contenido)s);
@@ -19,7 +19,6 @@ def postMessage(contenido):
             cursor.execute(inst, {'contenido': contenido})
             conn.commit()
             cursor.close()
-        conn.close()
         print("Mensaje insertado en la base de datos.")
     except Exception as e:
         print("(SISTEMA)   Error al insertar el mensaje: " + str(e))
